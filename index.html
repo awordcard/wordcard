@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>简约单词卡片 v1.31</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        
+        #app {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 800px;
+            position: relative;
+        }
+        
+        .version {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            color: rgba(0, 0, 0, 0.3);
+            font-size: 0.8rem;
+            font-weight: 500;
+            z-index: 5;
+            font-style: italic;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 10px;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .header h1 {
+            font-weight: 300;
+            font-size: 1.6rem;
+            color: #2c3e50;
+            letter-spacing: -0.5px;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .nav-btn {
+            background: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-btn i {
+            font-size: 1.2rem;
+            color: #3498db;
+        }
+        
+        .card-container {
+            perspective: 1500px;
+            height: 60vh;
+            min-height: 350px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+            cursor: pointer;
+        }
+        
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .card-front {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            color: #2c3e50;
+        }
+        
+        .card-back {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            transform: rotateY(180deg);
+            overflow-y: auto;
+        }
+        
+        .word {
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+        
+        .phonetic {
+            font-size: 1.3rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .phonetic span {
+            display: inline-block;
+            margin: 0 8px;
+            padding: 0 5px;
+            border-radius: 4px;
+            background: none;
+            box-shadow: none;
+        }
+        
+        .hint {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            position: absolute;
+            bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .translation {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+        
+        .example {
+            font-style: italic;
+            font-size: 1.4rem;
+            margin: 20px 0;
+            line-height: 1.5;
+        }
+        
+        .highlight {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        .example-translation {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 18px 10px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(50, 50, 93, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
+        
+        .btn-dont-know {
+            background: linear-gradient(to right, #ff6b6b, #ff8e8e);
+            color: white;
+        }
+        
+        .btn-know {
+            background: linear-gradient(to right, #1dd1a1, #10ac84);
+            color: white;
+        }
+        
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        /* 次页面样式 - 生词列表 */
+        .secondary-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .secondary-page.active {
+            transform: translateY(0);
+        }
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #3498db;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .word-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .word-item {
+            padding: 18px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .word-item:active {
+            background: #f8f9fa;
+        }
+        
+        .word-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .word-text {
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+        
+        .word-phonetic {
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-family: Arial, sans-serif;
+            margin-top: 4px;
+        }
+        
+        .word-item i {
+            color: #95a5a6;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        
+        /* 单词详情页面 */
+        .word-detail {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            height: calc(100vh - 180px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .word-detail .word {
+            color: white;
+            font-size: 2.8rem;
+        }
+        
+        .word-detail .phonetic {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .word-detail .translation {
+            font-size: 2rem;
+        }
+        
+        .word-detail .example {
+            font-size: 1.3rem;
+        }
+        
+        .word-detail .example-translation {
+            font-size: 1.1rem;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .word {
+                font-size: 2.8rem;
+            }
+            
+            .phonetic {
+                font-size: 1.1rem;
+            }
+            
+            .translation {
+                font-size: 1.8rem;
+            }
+            
+            .example {
+                font-size: 1.2rem;
+            }
+            
+            .btn {
+                padding: 16px 8px;
+                font-size: 1.1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.4rem;
+            }
+            
+            .version {
+                font-size: 0.7rem;
+                right: 10px;
+            }
+        }
+        
+        .progress-container {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin: 15px 0;
+            height: 8px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #3498db, #2ecc71);
+            border-radius: 10px;
+            width: 25%;
+            transition: width 0.4s ease;
+        }
+        
+        .word-count {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2ecc71;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s, top 0.3s;
+            font-weight: 500;
+            white-space: nowrap;
+            max-width: 90vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.95rem;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            top: 30px;
+        }
+        
+        .notification.error {
+            background: #ff6b6b;
+        }
+        
+        .swipe-hint {
+            position: absolute;
+            bottom: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            animation: swipeHint 1.5s infinite;
+        }
+        
+        @keyframes swipeHint {
+            0%, 100% { opacity: 0.5; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 主页面 -->
+        <div class="header">
+            <div class="header-buttons">
+                <button class="nav-btn" id="restartBtn">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="nav-btn" id="unknownWordsBtn">
+                    <i class="fas fa-bookmark"></i>
+                </button>
+            </div>
+            <h1>单词学习卡片</h1>
+            <div style="width: 88px;"></div> <!-- 占位保持居中 -->
+        </div>
+        
+        <div class="word-count">单词 <span id="currentWordCount">1</span>/<span id="totalWords">50</span></div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="card-container">
+            <div class="card" id="wordCard">
+                <div class="card-face card-front">
+                    <div class="word" id="currentWord">serendipity</div>
+                    <div class="phonetic" id="currentPhonetic">
+                        <span>英 /ˌserənˈdɪpəti/</span>
+                        <span>美 /ˌserənˈdɪpəti/</span>
+                    </div>
+                    <div class="hint">点击查看释义</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="translation" id="currentTranslation">意外发现美好事物的能力</div>
+                    <div class="example" id="currentExample">It was serendipity that led me to this charming little bookstore.</div>
+                    <div class="example-translation" id="currentExampleTranslation">正是机缘巧合让我发现了这家迷人的小书店。</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn btn-dont-know" id="dontKnowBtn">
+                <i class="fas fa-times"></i> 不认识
+            </button>
+            <button class="btn btn-know" id="knowBtn">
+                <i class="fas fa-check"></i> 认识
+            </button>
+        </div>
+        
+        <!-- 版本号 -->
+        <div class="version">v1.31</div>
+        
+        <!-- 生词列表页面 -->
+        <div class="secondary-page" id="unknownWordsPage">
+            <div class="page-header">
+                <button class="back-btn" id="backFromListBtn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="page-title">生词本</div>
+            </div>
+            
+            <div class="word-list" id="unknownWordsList">
+                <!-- 初始为空 -->
+                <div class="empty-state" id="emptyList">
+                    <i class="fas fa-book-open"></i>
+                    <p>生词本为空</p>
+                    <p style="margin-top: 10px; font-size: 1rem;">点击"不认识"按钮添加单词</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 单词详情页面 -->
+        <div class="secondary-page" id="wordDetailPage">
+            <div class="page-header">
+                <button class="back-btn" id="backFromDetailBtn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="page-title">单词详情</div>
+            </div>
+            
+            <div class="word-detail" id="wordDetailContent">
+                <!-- 内容由JavaScript动态生成 -->
+                <div class="swipe-hint">上下滑动切换单词</div>
+            </div>
+        </div>
+        
+        <div class="notification" id="notification">单词已添加到生词本</div>
+    </div>
+
+    <script>
+        // 单词数据库（修正了重复单词和音标问题）
+        const wordDatabase = [
+            {
+                word: "serendipity",
+                phoneticUK: "/ˌserənˈdɪpəti/",
+                phoneticUS: "/ˌserənˈdɪpəti/",
+                translation: "意外发现美好事物的能力",
+                example: "It was serendipity that led me to this charming little bookstore.",
+                exampleTranslation: "正是机缘巧合让我发现了这家迷人的小书店。"
+            },
+            {
+                word: "ephemeral",
+                phoneticUK: "/ɪˈfemərəl/",
+                phoneticUS: "/ɪˈfemərəl/",
+                translation: "短暂的，瞬息的",
+                example: "Fame in the internet age is often ephemeral.",
+                exampleTranslation: "互联网时代的名气往往是短暂的。"
+            },
+            {
+                word: "ubiquitous",
+                phoneticUK: "/juːˈbɪkwɪtəs/",
+                phoneticUS: "/juːˈbɪkwɪtəs/",
+                translation: "无所不在的，普遍存在的",
+                example: "Mobile phones are now ubiquitous in modern society.",
+                exampleTranslation: "手机在现代社会中无处不在。"
+            },
+            {
+                word: "eloquent",
+                phoneticUK: "/ˈeləkwənt/",
+                phoneticUS: "/ˈeləkwənt/",
+                translation: "雄辩的，有说服力的",
+                example: "Her eloquent speech moved the entire audience.",
+                exampleTranslation: "她雄辩的演讲感动了全场观众。"
+            },
+            {
+                word: "resilient",
+                phoneticUK: "/rɪˈzɪliənt/",
+                phoneticUS: "/rɪˈzɪljənt/",
+                translation: "适应力强的，能复原的",
+                example: "Children are often more resilient than adults think.",
+                exampleTranslation: "孩子们往往比成年人想象的更具适应力。"
+            },
+            {
+                word: "pragmatic",
+                phoneticUK: "/præɡˈmætɪk/",
+                phoneticUS: "/præɡˈmætɪk/",
+                translation: "务实的，实用的",
+                example: "We need a pragmatic approach to solve this problem.",
+                exampleTranslation: "我们需要一个务实的方法来解决这个问题。"
+            },
+            {
+                word: "meticulous",
+                phoneticUK: "/məˈtɪkjələs/",
+                phoneticUS: "/məˈtɪkjələs/",
+                translation: "一丝不苟的，极为谨慎的",
+                example: "He is meticulous about keeping records of all transactions.",
+                exampleTranslation: "他一丝不苟地记录所有的交易。"
+            },
+            {
+                word: "ambiguous",
+                phoneticUK: "/æmˈbɪɡjuəs/",
+                phoneticUS: "/æmˈbɪɡjuəs/",
+                translation: "模棱两可的，不明确的",
+                example: "The instructions were ambiguous and confusing.",
+                exampleTranslation: "这些指示模棱两可，令人困惑。"
+            },
+            {
+                word: "benevolent",
+                phoneticUK: "/bəˈnevələnt/",
+                phoneticUS: "/bəˈnevələnt/",
+                translation: "仁慈的，慈善的",
+                example: "The benevolent donor gave millions to charity.",
+                exampleTranslation: "这位仁慈的捐助者向慈善机构捐赠了数百万。"
+            },
+            {
+                word: "cacophony",
+                phoneticUK: "/kəˈkɒfəni/",
+                phoneticUS: "/kəˈkɑːfəni/",
+                translation: "刺耳的嘈杂声",
+                example: "The cacophony of car horns filled the city streets.",
+                exampleTranslation: "汽车喇叭的刺耳声音充斥在城市街道上。"
+            },
+            {
+                word: "diligent",
+                phoneticUK: "/ˈdɪlɪdʒənt/",
+                phoneticUS: "/ˈdɪlədʒənt/",
+                translation: "勤奋的，刻苦的",
+                example: "She is a diligent student who always completes her assignments on time.",
+                exampleTranslation: "她是一个勤奋的学生，总是按时完成作业。"
+            },
+            {
+                word: "empathy",
+                phoneticUK: "/ˈempəθi/",
+                phoneticUS: "/ˈempəθi/",
+                translation: "同理心，共情",
+                example: "The nurse showed great empathy towards her patients.",
+                exampleTranslation: "这位护士对她的病人表现出极大的同理心。"
+            },
+            {
+                word: "furtive",
+                phoneticUK: "/ˈfɜːtɪv/",
+                phoneticUS: "/ˈfɝːtɪv/",
+                translation: "偷偷摸摸的，鬼鬼祟祟的",
+                example: "He cast a furtive glance over his shoulder.",
+                exampleTranslation: "他偷偷回头瞥了一眼。"
+            },
+            {
+                word: "gregarious",
+                phoneticUK: "/ɡrɪˈɡeəriəs/",
+                phoneticUS: "/ɡrɪˈɡeriəs/",
+                translation: "爱交际的，群居的",
+                example: "She's very gregarious and loves parties.",
+                exampleTranslation: "她非常爱交际，喜欢参加派对。"
+            },
+            {
+                word: "harbinger",
+                phoneticUK: "/ˈhɑːbɪndʒər/",
+                phoneticUS: "/ˈhɑːrbɪndʒɚ/",
+                translation: "预兆，先驱",
+                example: "The robin is a harbinger of spring.",
+                exampleTranslation: "知更鸟是春天的预兆。"
+            },
+            {
+                word: "iconoclast",
+                phoneticUK: "/aɪˈkɒnəklæst/",
+                phoneticUS: "/aɪˈkɑːnəklæst/",
+                translation: "反对传统观念的人",
+                example: "As an iconoclast, he challenged many established scientific theories.",
+                exampleTranslation: "作为一个反传统的人，他挑战了许多既定的科学理论。"
+            },
+            {
+                word: "juxtapose",
+                phoneticUK: "/ˈdʒʌkstəpəʊz/",
+                phoneticUS: "/ˈdʒʌkstəpoʊz/",
+                translation: "并置，并列",
+                example: "The exhibition juxtaposes Picasso's early and late works.",
+                exampleTranslation: "展览将毕加索的早期和晚期作品并列展出。"
+            },
+            {
+                word: "kaleidoscope",
+                phoneticUK: "/kəˈlaɪdəskəʊp/",
+                phoneticUS: "/kəˈlaɪdəskoʊp/",
+                translation: "万花筒，千变万化",
+                example: "The festival was a kaleidoscope of colors and sounds.",
+                exampleTranslation: "这个节日是色彩和声音的万花筒。"
+            },
+            {
+                word: "labyrinth",
+                phoneticUK: "/ˈlæbərɪnθ/",
+                phoneticUS: "/ˈlæbərɪnθ/",
+                translation: "迷宫，错综复杂的事物",
+                example: "The old city is a labyrinth of narrow streets.",
+                exampleTranslation: "这座老城是一个由狭窄街道组成的迷宫。"
+            },
+            {
+                word: "mellifluous",
+                phoneticUK: "/məˈlɪfluəs/",
+                phoneticUS: "/məˈlɪfluəs/",
+                translation: "如蜜般甜美的，悦耳的",
+                example: "She has a mellifluous voice that is perfect for radio.",
+                exampleTranslation: "她有着如蜜般甜美的嗓音，非常适合广播。"
+            },
+            {
+                word: "nefarious",
+                phoneticUK: "/nɪˈfeəriəs/",
+                phoneticUS: "/nɪˈferiəs/",
+                translation: "邪恶的，不法的",
+                example: "The organization was involved in nefarious activities.",
+                exampleTranslation: "该组织参与了非法活动。"
+            },
+            {
+                word: "obfuscate",
+                phoneticUK: "/ˈɒbfʌskeɪt/",
+                phoneticUS: "/ˈɑːbfʌskeɪt/",
+                translation: "使模糊，使困惑",
+                example: "The politician tried to obfuscate the issue with technical jargon.",
+                exampleTranslation: "这位政治家试图用专业术语来混淆这个问题。"
+            },
+            {
+                word: "perfunctory",
+                phoneticUK: "/pəˈfʌŋktəri/",
+                phoneticUS: "/pɚˈfʌŋktəri/",
+                translation: "敷衍的，草率的",
+                example: "He gave a perfunctory nod and continued reading.",
+                exampleTranslation: "他敷衍地点了点头，然后继续阅读。"
+            },
+            {
+                word: "quintessential",
+                phoneticUK: "/ˌkwɪntɪˈsenʃəl/",
+                phoneticUS: "/ˌkwɪntəˈsenʃəl/",
+                translation: "典型的，精髓的",
+                example: "This café is the quintessential Parisian experience.",
+                exampleTranslation: "这家咖啡馆是典型的巴黎体验。"
+            },
+            {
+                word: "recalcitrant",
+                phoneticUK: "/rɪˈkælsɪtrənt/",
+                phoneticUS: "/rɪˈkælsətrənt/",
+                translation: "顽抗的，不服从的",
+                example: "The recalcitrant child refused to follow instructions.",
+                exampleTranslation: "这个顽抗的孩子拒绝听从指示。"
+            },
+            {
+                word: "sycophant",
+                phoneticUK: "/ˈsɪkəfænt/",
+                phoneticUS: "/ˈsɪkəfænt/",
+                translation: "谄媚者，拍马屁的人",
+                example: "He surrounded himself with sycophants who praised his every move.",
+                exampleTranslation: "他身边围满了阿谀奉承的人，赞美他的一举一动。"
+            },
+            {
+                word: "taciturn",
+                phoneticUK: "/ˈtæsɪtɜːn/",
+                phoneticUS: "/ˈtæsətɝːn/",
+                translation: "沉默寡言的",
+                example: "The taciturn man rarely spoke more than a few words.",
+                exampleTranslation: "这个沉默寡言的人很少说超过几句话。"
+            },
+            {
+                word: "ubiquity",
+                phoneticUK: "/juːˈbɪkwɪti/",
+                phoneticUS: "/juːˈbɪkwəti/",
+                translation: "无所不在，普遍存在",
+                example: "The ubiquity of smartphones has changed modern communication.",
+                exampleTranslation: "智能手机的普遍存在改变了现代通信方式。"
+            },
+            {
+                word: "venerable",
+                phoneticUK: "/ˈvenərəbəl/",
+                phoneticUS: "/ˈvenərəbəl/",
+                translation: "值得尊敬的，古老的",
+                example: "The venerable professor had taught at the university for fifty years.",
+                exampleTranslation: "这位德高望重的教授已经在这所大学任教五十年了。"
+            },
+            {
+                word: "wistful",
+                phoneticUK: "/ˈwɪstfəl/",
+                phoneticUS: "/ˈwɪstfəl/",
+                translation: "惆怅的，渴望的",
+                example: "She gave a wistful smile as she remembered her childhood.",
+                exampleTranslation: "回忆起童年时，她露出了惆怅的微笑。"
+            },
+            // 新增单词（替换了重复的单词）
+            {
+                word: "zealous",
+                phoneticUK: "/ˈzeləs/",
+                phoneticUS: "/ˈzeləs/",
+                translation: "热心的，热情的",
+                example: "He was a zealous supporter of the environmental movement.",
+                exampleTranslation: "他是环保运动的热心支持者。"
+            },
+            {
+                word: "alleviate",
+                phoneticUK: "/əˈliːvieɪt/",
+                phoneticUS: "/əˈliːvieɪt/",
+                translation: "减轻，缓解",
+                example: "The medicine helped to alleviate her pain.",
+                exampleTranslation: "这种药有助于缓解她的疼痛。"
+            },
+            {
+                word: "candid",
+                phoneticUK: "/ˈkændɪd/",
+                phoneticUS: "/ˈkændɪd/",
+                translation: "坦率的，直言不讳的",
+                example: "She gave a candid account of her experiences.",
+                exampleTranslation: "她坦率地讲述了自己的经历。"
+            },
+            {
+                word: "frugal",
+                phoneticUK: "/ˈfruːɡl/",
+                phoneticUS: "/ˈfruːɡl/",
+                translation: "节俭的，朴素的",
+                example: "Despite his wealth, he led a frugal lifestyle.",
+                exampleTranslation: "尽管他很富有，但他过着节俭的生活。"
+            },
+            {
+                word: "humble",
+                phoneticUK: "/ˈhʌmbl/",
+                phoneticUS: "/ˈhʌmbl/",
+                translation: "谦逊的，卑微的",
+                example: "Despite his success, he remained humble.",
+                exampleTranslation: "尽管他取得了成功，但他仍然保持谦逊。"
+            },
+            {
+                word: "ingenious",
+                phoneticUK: "/ɪnˈdʒiːniəs/",
+                phoneticUS: "/ɪnˈdʒiːniəs/",
+                translation: "灵巧的，巧妙的",
+                example: "He came up with an ingenious solution to the problem.",
+                exampleTranslation: "他想出了一个巧妙的解决方案。"
+            },
+            {
+                word: "jovial",
+                phoneticUK: "/ˈdʒəʊviəl/",
+                phoneticUS: "/ˈdʒoʊviəl/",
+                translation: "快乐的，愉快的",
+                example: "He was in a jovial mood after hearing the good news.",
+                exampleTranslation: "听到这个好消息后，他心情愉快。"
+            },
+            {
+                word: "keen",
+                phoneticUK: "/kiːn/",
+                phoneticUS: "/kiːn/",
+                translation: "敏锐的，热切的",
+                example: "She has a keen interest in astronomy.",
+                exampleTranslation: "她对天文学有浓厚的兴趣。"
+            },
+            {
+                word: "lucid",
+                phoneticUK: "/ˈluːsɪd/",
+                phoneticUS: "/ˈluːsɪd/",
+                translation: "清晰的，明了的",
+                example: "He gave a lucid explanation of the complex theory.",
+                exampleTranslation: "他对这个复杂理论给出了清晰的解释。"
+            },
+            {
+                word: "nostalgic",
+                phoneticUK: "/nɒˈstældʒɪk/",
+                phoneticUS: "/nəˈstældʒɪk/",
+                translation: "怀旧的，思乡的",
+                example: "Looking at old photos made her feel nostalgic.",
+                exampleTranslation: "看着旧照片让她感到怀旧。"
+            },
+            {
+                word: "optimistic",
+                phoneticUK: "/ˌɒptɪˈmɪstɪk/",
+                phoneticUS: "/ˌɑːptɪˈmɪstɪk/",
+                translation: "乐观的，积极的",
+                example: "She remains optimistic about the future.",
+                exampleTranslation: "她对未来保持乐观。"
+            },
+            {
+                word: "quaint",
+                phoneticUK: "/kweɪnt/",
+                phoneticUS: "/kweɪnt/",
+                translation: "古雅的，奇特的",
+                example: "They stayed in a quaint little village.",
+                exampleTranslation: "他们住在一个古雅的小村庄里。"
+            },
+            {
+                word: "serene",
+                phoneticUK: "/səˈriːn/",
+                phoneticUS: "/səˈriːn/",
+                translation: "宁静的，安详的",
+                example: "The lake was serene in the morning light.",
+                exampleTranslation: "湖面在晨光中显得宁静。"
+            },
+            {
+                word: "tenacious",
+                phoneticUK: "/təˈneɪʃəs/",
+                phoneticUS: "/təˈneɪʃəs/",
+                translation: "坚韧的，顽强的",
+                example: "She is tenacious in pursuing her goals.",
+                exampleTranslation: "她在追求目标方面非常坚韧。"
+            },
+            {
+                word: "unwavering",
+                phoneticUK: "/ʌnˈweɪvərɪŋ/",
+                phoneticUS: "/ʌnˈweɪvərɪŋ/",
+                translation: "坚定的，不动摇的",
+                example: "His unwavering commitment inspired everyone.",
+                exampleTranslation: "他坚定的承诺激励了每个人。"
+            },
+            {
+                word: "vibrant",
+                phoneticUK: "/ˈvaɪbrənt/",
+                phoneticUS: "/ˈvaɪbrənt/",
+                translation: "充满活力的，鲜艳的",
+                example: "The city has a vibrant cultural scene.",
+                exampleTranslation: "这座城市有着充满活力的文化场景。"
+            },
+            {
+                word: "whimsical",
+                phoneticUK: "/ˈwɪmzɪkəl/",
+                phoneticUS: "/ˈwɪmzɪkəl/",
+                translation: "异想天开的，古怪的",
+                example: "The artist has a whimsical style.",
+                exampleTranslation: "这位艺术家有着异想天开的风格。"
+            },
+            {
+                word: "xenial",
+                phoneticUK: "/ˈziːniəl/",
+                phoneticUS: "/ˈziːniəl/",
+                translation: "好客的，友善的",
+                example: "The xenial host made everyone feel welcome.",
+                exampleTranslation: "好客的主人让每个人都感到受欢迎。"
+            },
+            {
+                word: "yearning",
+                phoneticUK: "/ˈjɜːnɪŋ/",
+                phoneticUS: "/ˈjɝːnɪŋ/",
+                translation: "渴望的，向往的",
+                example: "She felt a yearning for her homeland.",
+                exampleTranslation: "她对故乡充满了渴望。"
+            },
+            {
+                word: "zestful",
+                phoneticUK: "/ˈzestfəl/",
+                phoneticUS: "/ˈzestfəl/",
+                translation: "热情的，兴致勃勃的",
+                example: "He approached the project with zestful enthusiasm.",
+                exampleTranslation: "他以热情洋溢的态度对待这个项目。"
+            }
+        ];
+        
+        // 应用状态
+        const appState = {
+            currentWordIndex: 0,
+            unknownWords: [],
+            isCardFlipped: false,
+            usedIndices: new Set(),
+            currentDetailIndex: -1,
+            activeTimers: []
+        };
+        
+        // DOM 元素
+        const elements = {
+            wordCard: document.getElementById('wordCard'),
+            currentWord: document.getElementById('currentWord'),
+            currentPhonetic: document.getElementById('currentPhonetic'),
+            currentTranslation: document.getElementById('currentTranslation'),
+            currentExample: document.getElementById('currentExample'),
+            currentExampleTranslation: document.getElementById('currentExampleTranslation'),
+            dontKnowBtn: document.getElementById('dontKnowBtn'),
+            knowBtn: document.getElementById('knowBtn'),
+            unknownWordsBtn: document.getElementById('unknownWordsBtn'),
+            restartBtn: document.getElementById('restartBtn'),
+            unknownWordsPage: document.getElementById('unknownWordsPage'),
+            wordDetailPage: document.getElementById('wordDetailPage'),
+            backFromListBtn: document.getElementById('backFromListBtn'),
+            backFromDetailBtn: document.getElementById('backFromDetailBtn'),
+            unknownWordsList: document.getElementById('unknownWordsList'),
+            wordDetailContent: document.getElementById('wordDetailContent'),
+            currentWordCount: document.getElementById('currentWordCount'),
+            totalWords: document.getElementById('totalWords'),
+            progressBar: document.getElementById('progressBar'),
+            emptyList: document.getElementById('emptyList'),
+            notification: document.getElementById('notification')
+        };
+        
+        // 初始化应用
+        function initApp() {
+            // 生成第一个随机单词
+            generateRandomWord();
+            updateProgress();
+            
+            // 设置总单词数显示
+            elements.totalWords.textContent = wordDatabase.length;
+            
+            // 事件监听器
+            elements.wordCard.addEventListener('click', flipCard);
+            elements.dontKnowBtn.addEventListener('click', handleDontKnow);
+            elements.knowBtn.addEventListener('click', handleKnow);
+            elements.unknownWordsBtn.addEventListener('click', showUnknownWordsPage);
+            elements.restartBtn.addEventListener('click', restartApp);
+            elements.backFromListBtn.addEventListener('click', hideSecondaryPages);
+            elements.backFromDetailBtn.addEventListener('click', hideWordDetailPage);
+            
+            // 添加触摸事件监听器
+            elements.wordDetailContent.addEventListener('touchstart', handleTouchStart, false);
+            elements.wordDetailContent.addEventListener('touchmove', handleTouchMove, false);
+            elements.wordDetailContent.addEventListener('touchend', handleTouchEnd, false);
+        }
+        
+        // 重启应用 - 增强版
+        function restartApp() {
+            // 清除所有活动计时器
+            appState.activeTimers.forEach(timerId => clearTimeout(timerId));
+            appState.activeTimers = [];
+            
+            // 重置所有状态
+            appState.usedIndices.clear();
+            appState.unknownWords = [];
+            appState.currentWordIndex = 0;
+            appState.isCardFlipped = false;
+            appState.currentDetailIndex = -1;
+            
+            // 强制卡片翻回正面
+            if (elements.wordCard.classList.contains('flipped')) {
+                elements.wordCard.classList.remove('flipped');
+            }
+            
+            // 启用所有按钮
+            elements.dontKnowBtn.disabled = false;
+            elements.knowBtn.disabled = false;
+            
+            // 正确显示空状态
+            updateUnknownWordsList();
+            
+            // 清空单词详情页面
+            elements.wordDetailContent.innerHTML = '<div class="swipe-hint">上下滑动切换单词</div>';
+            
+            // 隐藏所有次级页面
+            hideSecondaryPages();
+            
+            // 重新生成第一个单词
+            generateRandomWord();
+            updateProgress();
+            
+            // 显示通知
+            showNotification('应用已重置');
+        }
+        
+        // 生成随机单词
+        function generateRandomWord() {
+            // 如果所有单词都已使用过，重置
+            if (appState.usedIndices.size >= wordDatabase.length) {
+                appState.usedIndices.clear();
+            }
+            
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * wordDatabase.length);
+            } while (appState.usedIndices.has(newIndex));
+            
+            appState.usedIndices.add(newIndex);
+            appState.currentWordIndex = newIndex;
+            updateWordCard();
+        }
+        
+        // 更新单词卡片
+        function updateWordCard() {
+            const word = wordDatabase[appState.currentWordIndex];
+            elements.currentWord.textContent = word.word;
+            elements.currentPhonetic.innerHTML = `
+                <span>英 ${word.phoneticUK}</span>
+                <span>美 ${word.phoneticUS}</span>
+            `;
+            elements.currentTranslation.textContent = word.translation;
+            
+            // 高亮当前单词
+            const example = word.example.replace(
+                new RegExp(`\\b${word.word}\\b`, 'gi'), 
+                `<span class="highlight">${word.word}</span>`
+            );
+            elements.currentExample.innerHTML = example;
+            
+            elements.currentExampleTranslation.textContent = word.exampleTranslation;
+            elements.currentWordCount.textContent = appState.usedIndices.size;
+            
+            updateProgress();
+        }
+        
+        // 更新进度条
+        function updateProgress() {
+            const progress = (appState.usedIndices.size / wordDatabase.length) * 100;
+            elements.progressBar.style.width = `${progress}%`;
+        }
+        
+        // 翻转卡片
+        function flipCard() {
+            elements.wordCard.classList.toggle('flipped');
+            appState.isCardFlipped = !appState.isCardFlipped;
+        }
+        
+        // 处理"不认识"按钮点击
+        function handleDontKnow() {
+            // 禁用按钮防止重复点击
+            elements.dontKnowBtn.disabled = true;
+            elements.knowBtn.disabled = true;
+            
+            const currentWord = wordDatabase[appState.currentWordIndex];
+            
+            // 检查是否已存在于生词本中
+            let isNewWord = true;
+            if (!appState.unknownWords.some(w => w.word === currentWord.word)) {
+                // 添加到生词本
+                appState.unknownWords.push(currentWord);
+                updateUnknownWordsList();
+            } else {
+                isNewWord = false;
+            }
+            
+            // 翻转卡片（如果未翻转）
+            if (!appState.isCardFlipped) {
+                flipCard();
+                appState.isCardFlipped = true;
+            }
+            
+            // 显示通知
+            showNotification(isNewWord ? '单词已添加到生词本' : '单词已在生词本中', !isNewWord);
+            
+            // 3秒后翻回并切换单词（增加了0.5秒）
+            const timerId = setTimeout(() => {
+                // 翻回正面
+                if (appState.isCardFlipped) {
+                    flipCard();
+                    appState.isCardFlipped = false;
+                }
+                
+                // 切换单词
+                generateRandomWord();
+                
+                // 启用按钮
+                elements.dontKnowBtn.disabled = false;
+                elements.knowBtn.disabled = false;
+            }, 3000); // 增加0.5秒
+            
+            appState.activeTimers.push(timerId);
+        }
+        
+        // 处理"认识"按钮点击
+        function handleKnow() {
+            // 禁用按钮防止重复点击
+            elements.dontKnowBtn.disabled = true;
+            elements.knowBtn.disabled = true;
+            
+            // 如果卡片未翻转，则翻转卡片
+            if (!appState.isCardFlipped) {
+                flipCard();
+                appState.isCardFlipped = true;
+            }
+            
+            // 1.5秒后翻回并切换单词（增加了0.5秒）
+            const timerId = setTimeout(() => {
+                // 翻回正面
+                if (appState.isCardFlipped) {
+                    flipCard();
+                    appState.isCardFlipped = false;
+                }
+                
+                // 切换单词
+                generateRandomWord();
+                
+                // 启用按钮
+                elements.dontKnowBtn.disabled = false;
+                elements.knowBtn.disabled = false;
+            }, 1500); // 增加0.5秒
+            
+            appState.activeTimers.push(timerId);
+        }
+        
+        // 显示通知
+        function showNotification(message, isError = false) {
+            elements.notification.textContent = message;
+            elements.notification.className = isError ? 'notification error' : 'notification';
+            elements.notification.classList.add('show');
+            setTimeout(() => {
+                elements.notification.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 更新生词列表
+        function updateUnknownWordsList() {
+            // 清空列表
+            elements.unknownWordsList.innerHTML = '';
+            
+            if (appState.unknownWords.length === 0) {
+                // 显示空状态
+                const emptyList = document.createElement('div');
+                emptyList.className = 'empty-state';
+                emptyList.id = 'emptyList';
+                emptyList.innerHTML = `
+                    <i class="fas fa-book-open"></i>
+                    <p>生词本为空</p>
+                    <p style="margin-top: 10px; font-size: 1rem;">点击"不认识"按钮添加单词</p>
+                `;
+                elements.unknownWordsList.appendChild(emptyList);
+            } else {
+                // 更新生词列表
+                appState.unknownWords.forEach((word, index) => {
+                    const wordItem = document.createElement('div');
+                    wordItem.className = 'word-item';
+                    wordItem.setAttribute('data-word', word.word);
+                    wordItem.setAttribute('data-index', index);
+                    wordItem.innerHTML = `
+                        <div class="word-info">
+                            <div class="word-text">${word.word}</div>
+                            <div class="word-phonetic">英 ${word.phoneticUK}</div>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    `;
+                    wordItem.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        showWordDetail(word.word, index);
+                    });
+                    elements.unknownWordsList.appendChild(wordItem);
+                });
+            }
+        }
+        
+        // 显示生词本页面
+        function showUnknownWordsPage() {
+            elements.unknownWordsPage.classList.add('active');
+        }
+        
+        // 显示单词详情页面
+        function showWordDetail(word, index) {
+            appState.currentDetailIndex = index;
+            updateWordDetail();
+            elements.wordDetailPage.classList.add('active');
+        }
+        
+        // 更新单词详情
+        function updateWordDetail() {
+            if (appState.currentDetailIndex === -1 || appState.unknownWords.length === 0) return;
+            
+            const wordData = appState.unknownWords[appState.currentDetailIndex];
+            
+            if (wordData) {
+                // 高亮当前单词
+                const example = wordData.example.replace(
+                    new RegExp(`\\b${wordData.word}\\b`, 'gi'), 
+                    `<span class="highlight">${wordData.word}</span>`
+                );
+                
+                elements.wordDetailContent.innerHTML = `
+                    <div class="word">${wordData.word}</div>
+                    <div class="phonetic">
+                        <span>英 ${wordData.phoneticUK}</span>
+                        <span>美 ${wordData.phoneticUS}</span>
+                    </div>
+                    <div class="translation">${wordData.translation}</div>
+                    <div class="example">${example}</div>
+                    <div class="example-translation">${wordData.exampleTranslation}</div>
+                    <div class="swipe-hint">上下滑动切换单词</div>
+                `;
+            }
+        }
+        
+        // 触摸事件处理
+        let touchStartY = 0;
+        let touchEndY = 0;
+        
+        function handleTouchStart(event) {
+            touchStartY = event.changedTouches[0].screenY;
+        }
+        
+        function handleTouchMove(event) {
+            touchEndY = event.changedTouches[0].screenY;
+            event.preventDefault(); // 阻止默认滚动行为
+        }
+        
+        function handleTouchEnd() {
+            if (touchStartY === 0 || touchEndY === 0) return;
+            
+            const diffY = touchStartY - touchEndY;
+            
+            if (Math.abs(diffY) > 50) { // 滑动距离阈值
+                if (diffY > 0) {
+                    // 向上滑动 - 下一个单词
+                    navigateToNextWord();
+                } else {
+                    // 向下滑动 - 上一个单词
+                    navigateToPrevWord();
+                }
+            }
+            
+            // 重置触摸位置
+            touchStartY = 0;
+            touchEndY = 0;
+        }
+        
+        // 导航到下一个单词
+        function navigateToNextWord() {
+            if (appState.unknownWords.length <= 1) return;
+            
+            appState.currentDetailIndex++;
+            if (appState.currentDetailIndex >= appState.unknownWords.length) {
+                appState.currentDetailIndex = 0; // 循环到第一个
+            }
+            
+            updateWordDetail();
+        }
+        
+        // 导航到上一个单词
+        function navigateToPrevWord() {
+            if (appState.unknownWords.length <= 1) return;
+            
+            appState.currentDetailIndex--;
+            if (appState.currentDetailIndex < 0) {
+                appState.currentDetailIndex = appState.unknownWords.length - 1; // 循环到最后一个
+            }
+            
+            updateWordDetail();
+        }
+        
+        // 隐藏所有次级页面
+        function hideSecondaryPages() {
+            elements.unknownWordsPage.classList.remove('active');
+            elements.wordDetailPage.classList.remove('active');
+        }
+        
+        // 隐藏单词详情页面
+        function hideWordDetailPage() {
+            elements.wordDetailPage.classList.remove('active');
+        }
+        
+        // 初始化应用
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            updateUnknownWordsList();
+        });
+    </script>
+</body>
+</html>
